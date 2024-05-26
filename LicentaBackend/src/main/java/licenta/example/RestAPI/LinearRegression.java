@@ -1,6 +1,8 @@
 package licenta.example.RestAPI;
 
 import java.util.Map;
+import java.util.*;
+import java.text.*;
 
 public class LinearRegression {
     private double slope;
@@ -73,33 +75,21 @@ public class LinearRegression {
         return scaledX;
     }
 
-    public static double[] normalizeData(double[] x) {
-        double[] normalizedX = new double[x.length];
-        double sum = 0;
-
-        // Calcularea sumei
-        for (double value : x) {
-            sum += value;
-        }
-
-        // Normalizarea datelor
-        double mean = sum / x.length;
-        double variance = 0;
-        for (double value : x) {
-            variance += Math.pow(value - mean, 2);
-        }
-        double stdDev = Math.sqrt(variance / x.length);
-        for (int i = 0; i < x.length; i++) {
-            normalizedX[i] = (x[i] - mean) / stdDev;
-        }
-
-        return normalizedX;
+    public static double[] normalizeData(double[] x, double minY, double maxY) {
+        return Arrays.stream(x).map(d -> (d - minY) / (maxY - minY)).toArray();
     }
 
     public int getPrediction(Map<String, Integer> scores) {
-        // Datele istorice furnizate
-        double[] dates = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
-        double[] values = {100, 412, 50, 70, 440, 440, 444, 504, 516, 516, 524, 547, 639, 461, 464, 464, 464, 464, 464, 492, 532, 559, 563, 597};
+        // Convert date strings to numerical values
+        double[] dates = new double[scores.size()];
+        double[] values = new double[scores.size()];
+
+        int index = 0;
+        for (Map.Entry<String, Integer> entry : scores.entrySet()) {
+            dates[index] = convertDateToNumber(entry.getKey());
+            values[index] = entry.getValue();
+            index++;
+        }
 
         // Calculul valorilor maxime și minime ale datelor de ieșire
         double minY = Double.MAX_VALUE;
@@ -115,22 +105,47 @@ public class LinearRegression {
 
         // Scalarea și normalizarea datelor
         double[] scaledDates = scaleData(dates);
-        double[] normalizedValues = normalizeData(values);
+        double[] normalizedValues = normalizeData(values, minY, maxY);
 
         // Antrenarea modelului de regresie liniară cu datele scalate și normalizate
         LinearRegression regression = new LinearRegression();
         regression.fit(scaledDates, normalizedValues);
 
         // Predictie pentru data viitoare
-        double nextDate = 25; // 25 este următoarea dată
+        String nextDateString = getNextDateString();
+        System.out.println(nextDateString);
+        double nextDate = convertDateToNumber(nextDateString); // Convert next date to numerical value
         double scaledNextDate = (nextDate - dates[0]) / (dates[dates.length - 1] - dates[0]); // Scalarea datelor pentru data viitoare
         double predictedValue = regression.predict(scaledNextDate);
         double descaledPrediction = predictedValue * (maxY - minY) + minY; // Descaleaza valoarea
 
-
         // Calculul MSE
         double mse = regression.calculateMSE(scaledDates, normalizedValues);
-        return (int)descaledPrediction;
+        System.out.println("Mean Squared Error: " + mse);
 
+        return (int)descaledPrediction;
+    }
+
+    // Helper method to convert date string to a numerical value
+    private double convertDateToNumber(String date) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate = sdf.parse(date);
+            return parsedDate.getTime() / (1000 * 60 * 60 * 24); // Convert to days since epoch
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // Helper method to get the next date as a string
+    private String getNextDateString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, 1);
+        return sdf.format(cal.getTime());
     }
 }
+
+
+
