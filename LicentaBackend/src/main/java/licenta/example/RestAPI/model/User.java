@@ -31,6 +31,8 @@ public class User {
 
     private int money;
 
+    private int yearOfLastGift;
+
     public User(String username, String password) {
         this.username = username;
         this.password = password;

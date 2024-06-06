@@ -48,6 +48,7 @@ public class UserController {
         // Update the money
         user.setMoney(user.getMoney());
         user.setNumberOfDoneQuest(newNumberOfDoneQuest);
+        user.setYearOfLastGift(user.getYearOfLastGift());
 
         // Save the updated user
         User updatedUser = service.updateUser(user);
@@ -77,13 +78,42 @@ public class UserController {
         // Update the money
         user.setMoney(newMoney + user.getMoney());
         user.setNumberOfDoneQuest(user.getNumberOfDoneQuest());
-
+        user.setYearOfLastGift(user.getYearOfLastGift());
         // Save the updated user
         User updatedUser = service.updateUser(user);
 
         return ResponseEntity.ok(updatedUser);
     }
 
+
+
+
+    @PutMapping("/updateYearOfLastGift")
+    @Description("Updates the money for a user")
+    public ResponseEntity<User> updateYearOfLastGiftForUser(@RequestParam String username, @RequestParam int yearOfLastGift) {
+        log.info("UserController - updateMoneyForUser : {}", username);
+
+        // Find the user by username
+        User user = service.findUserByUsername(username);
+
+        // Check if user exists
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        user.setUsername(user.getUsername());
+        user.setBirthdate(user.getBirthdate());
+        user.setPassword(user.getPassword());
+        user.setDescription(user.getDescription());
+        user.setTests(user.getTests());
+        user.setScore(user.getScore());
+        user.setMoney(user.getMoney());
+        user.setNumberOfDoneQuest(user.getNumberOfDoneQuest());
+        user.setYearOfLastGift(yearOfLastGift);
+        // Save the updated user
+        User updatedUser = service.updateUser(user);
+
+        return ResponseEntity.ok(updatedUser);
+    }
 
 
     @PutMapping("/updateScore")
@@ -119,6 +149,7 @@ public class UserController {
         // Update the money
         user.setMoney(user.getMoney());
         user.setNumberOfDoneQuest(user.getNumberOfDoneQuest());
+        user.setYearOfLastGift(user.getYearOfLastGift());
 
         // Save the updated user
         User updatedUser = service.updateUser(user);
